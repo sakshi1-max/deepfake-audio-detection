@@ -1,0 +1,14 @@
+{
+    "Test Accuracy": "92.88%",
+    "F1 Score": "0.9279",
+    "EER": "7.10%",
+    "Fake Accuracy": "91.94%",
+    "Real Accuracy": "93.86%",
+    "Threshold Used": "1.0000",
+    "Verification": {
+        "Accuracy >= 80%": true,
+        "EER <= 12%": true,
+        "F1 >= 80%": true,
+        "Per-class >= 75%": true
+    }
+}

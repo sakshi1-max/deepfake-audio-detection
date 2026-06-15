@@ -140,18 +140,18 @@ compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
 
 | Metric | Value | Required | Status |
 |--------|-------|----------|--------|
-| Test Accuracy | **92.88%** | ≥ 80% |  PASS |
-| F1 Score | **0.9279** | ≥ 0.80 |  PASS |
-| Equal Error Rate (EER) | **7.10%** | ≤ 12% |  PASS |
-| Fake Class Accuracy | **91.94%** | ≥ 75% |  PASS |
-| Real Class Accuracy | **93.86%** | ≥ 75% |  PASS |
+| Test Accuracy | **88.95%** | ≥ 80% |  PASS |
+| F1 Score | **0.8873** | ≥ 0.80 |  PASS |
+| Equal Error Rate (EER) | **11.05%** | ≤ 12% |  PASS |
+| Fake Class Accuracy | **88.86%** | ≥ 75% |  PASS |
+| Real Class Accuracy | **89.05%** | ≥ 75% |  PASS |
 
 ### Confusion Matrix
 
 |  | Predicted Fake | Predicted Real |
 |--|----------------|----------------|
-| **Actual Fake** | 2,179  | 191 |
-| **Actual Real** | 138  | 2,126  |
+| **Actual Fake** | 2,106  | 264 |
+| **Actual Real** | 248  | 2,016  |
 
 ---
 
@@ -173,7 +173,7 @@ results.png
 
 ```
 deepfake-audio-detection/
-├── final_notebook-2.ipynb       # Training notebook with full code
+├── final_notebook.ipynb       # Training notebook with full code
 ├── predict.py                 # Python inference script
 ├── app.py                     # Streamlit web application
 ├── best_model.keras           # Trained model
@@ -209,7 +209,7 @@ pip install tensorflow librosa numpy scikit-learn matplotlib seaborn streamlit
 ```bash
 jupyter notebook
 ```
-Open `final_notebook-2.ipynb` and run all cells sequentially.
+Open `final_notebook.ipynb` and run all cells sequentially.
 
 ### Test on New Audio Sample (predict.py)
 ```bash
@@ -251,7 +251,7 @@ streamlit run app.py
 
 ##  Author
 
-Sakshi  
+Sakshi ,24115129
 Electrical Engineering  
 Indian Institute of Technology Roorkee
 

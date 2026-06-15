@@ -1,45 +1,27 @@
-# Deepfake Audio Detection using CNN
+Deepfake Audio Detection using CNN
 
-##  Overview
+What is this project?
+AI voice synthesis has gotten scarily good. Modern text-to-speech systems can now mimic real human voices so convincingly that it's genuinely hard to tell the difference just by listening. This project is my attempt at tackling that problem — a deep learning system that listens to an audio clip and tells you whether it's a real human voice or an AI-generated one.
+Under the hood, it converts audio into Mel Spectrograms (basically a visual fingerprint of sound) and runs them through a CNN trained to spot the subtle artifacts that synthetic voices leave behind.
 
-Deepfake audio generated using modern AI voice synthesis systems can closely mimic human speech, making it increasingly difficult to distinguish between genuine and artificial recordings.
+Features
 
-This project presents a Deep Learning based Deepfake Audio Detection system that classifies audio recordings as:
+Binary classification: Genuine vs. Deepfake audio
+Audio preprocessing pipeline (mono, 16kHz, fixed length)
+Mel Spectrogram feature extraction
+CNN model with Batch Norm + Dropout regularization
+Handles class imbalance using computed class weights
+Auto saves the best model during training
+Early stopping + learning rate scheduling
+Equal Error Rate (EER) evaluation
+Confusion Matrix and training curves visualization
+predict.py for quick command-line inference
+Streamlit web app for an interactive demo
 
--  Genuine (Human Voice)
--  Deepfake (AI Generated Voice)
 
-The model converts audio recordings into Mel Spectrogram representations and uses a Convolutional Neural Network (CNN) to learn discriminative patterns and artifacts associated with synthetic speech.
-
----
-
-##  Features
-
-- Deepfake vs Genuine audio classification
-- Audio preprocessing and normalization
-- Mel Spectrogram feature extraction
-- CNN-based classification model
-- Class imbalance handling using class weights
-- Automatic model checkpointing
-- Early stopping and learning rate scheduling
-- Equal Error Rate (EER) evaluation
-- Confusion Matrix visualization
-- Performance report generation
-- Python inference script for testing new audio samples
-- Streamlit web app for interactive demo
-
----
-
-##  Dataset
-
-### Fake-or-Real (FoR) Dataset
-
-**Dataset Link:** [kaggle.com/datasets/mohammedabdeldayem/the-fake-or-real-dataset](https://www.kaggle.com/datasets/mohammedabdeldayem/the-fake-or-real-dataset)
-
-We use the **for-norm** split (LA Norm directory) as recommended.
-
-Dataset Structure:
-```
+Dataset
+I used the Fake-or-Real (FoR) Dataset — specifically the for-norm split.
+Link: kaggle.com/datasets/mohammedabdeldayem/the-fake-or-real-dataset
 for-norm/
 ├── training/
 │   ├── fake/
@@ -50,174 +32,61 @@ for-norm/
 └── testing/
     ├── fake/
     └── real/
-```
+SplitFakeRealTotalTraining26,92726,94153,868Validation5,3985,40010,798Testing2,3702,2644,634
 
-| Split | Fake | Real | Total |
-|-------|------|------|-------|
-| Training | 26,927 | 26,941 | 53,868 |
-| Validation | 5,398 | 5,400 | 10,798 |
-| Testing | 2,370 | 2,264 | 4,634 |
+How it works
+Step 1 — Audio Preprocessing
+Every audio file goes through the same pipeline:
 
----
+Load .wav → convert to mono → resample to 16kHz
+Fix length to exactly 4 seconds (pad if shorter, trim if longer)
 
-##  Project Pipeline
-
-### 1. Audio Preprocessing
-
-- Load `.wav` audio files
-- Convert audio to mono channel
-- Resample audio to 16 kHz
-- Fix audio length to 4 seconds
-- Pad shorter samples
-- Trim longer samples
-
-### 2. Feature Extraction
-
-Each audio file is transformed into a Mel Spectrogram.
-
-```
-Audio Signal
-      ↓
-Mel Spectrogram
-      ↓
-Normalized Feature Matrix
-```
-
-Configuration:
-- Sampling Rate: 16,000 Hz
-- Audio Length: 4 Seconds
-- Number of Mel Bands: 64
-
-### 3. CNN Architecture
-
-The model consists of:
-
-```
+Step 2 — Feature Extraction
+Each clip is converted into a Mel Spectrogram — a 2D representation of how frequency content changes over time. This is what the CNN actually "sees."
+Config: SR = 16000 Hz | Length = 4s | Mel Bands = 64
+Step 3 — CNN Model
 Input (64 × 126 × 1)
-↓ Conv2D (32) + Batch Normalization + Max Pooling + Dropout(0.2)
-↓ Conv2D (64) + Batch Normalization + Max Pooling + Dropout(0.2)
-↓ Conv2D (128) + Batch Normalization + Max Pooling + Dropout(0.2)
-↓ Conv2D (256) + Batch Normalization + Global Average Pooling
-↓ Dense (512) + Dropout(0.5)
-↓ Dense (2) + Softmax
-```
+  ↓ Conv2D (32) → BatchNorm → MaxPool → Dropout(0.2)
+  ↓ Conv2D (64) → BatchNorm → MaxPool → Dropout(0.2)
+  ↓ Conv2D (128) → BatchNorm → MaxPool → Dropout(0.2)
+  ↓ Conv2D (256) → BatchNorm → GlobalAvgPool
+  ↓ Dense (512) → Dropout(0.5)
+  ↓ Dense (2) → Softmax
+Total Parameters: 522,370
 
-Total Parameters: **522,370**
+Training Details
 
----
+Optimizer: Adam (lr = 0.001)
+Loss: Sparse Categorical Crossentropy
+Regularization: Batch Normalization + Dropout
+Callbacks: ModelCheckpoint, ReduceLROnPlateau, EarlyStopping (patience=7)
+Class imbalance: Handled via compute_class_weight('balanced', ...)
 
-##  Training Strategy
 
-### Optimizer
-Adam Optimizer
-```python
-Learning Rate = 0.001
-```
+Results
+MetricValueRequiredStatusTest Accuracy88.95%≥ 80%✅ PASSF1 Score0.8873≥ 0.80✅ PASSEqual Error Rate (EER)11.05%≤ 12%✅ PASSFake Class Accuracy88.86%≥ 75%✅ PASSReal Class Accuracy89.05%≥ 75%✅ PASS
+Confusion Matrix
+Predicted FakePredicted RealActual Fake2,106 ✅264 ❌Actual Real248 ❌2,016 ✅
 
-### Loss Function
-```python
-Sparse Categorical Crossentropy
-```
-
-### Regularization
-- Batch Normalization
-- Dropout Layers
-
-### Callbacks
-- ModelCheckpoint — saves best model based on val_accuracy
-- ReduceLROnPlateau — reduces LR when accuracy plateaus
-- EarlyStopping — stops training when no improvement (patience=7)
-
-### Class Imbalance Handling
-Class Weights computed using:
-```python
-compute_class_weight('balanced', classes=np.unique(y_train), y=y_train)
-```
-
----
-
-##  Results
-
-| Metric | Value | Required | Status |
-|--------|-------|----------|--------|
-| Test Accuracy | **88.95%** | ≥ 80% |  PASS |
-| F1 Score | **0.8873** | ≥ 0.80 |  PASS |
-| Equal Error Rate (EER) | **11.05%** | ≤ 12% |  PASS |
-| Fake Class Accuracy | **88.86%** | ≥ 75% |  PASS |
-| Real Class Accuracy | **89.05%** | ≥ 75% |  PASS |
-
-### Confusion Matrix
-
-|  | Predicted Fake | Predicted Real |
-|--|----------------|----------------|
-| **Actual Fake** | 2,106  | 264 |
-| **Actual Real** | 248  | 2,016  |
-
----
-
-##  Training Visualization
-
-The project generates:
-- Training & Validation Accuracy Curve
-- Training & Validation Loss Curve
-- Confusion Matrix Heatmap
-
-Generated file:
-```
-results.png
-```
-
----
-
-##  Repository Structure
-
-```
+Repo Structure
 deepfake-audio-detection/
-├── final_notebook.ipynb       # Training notebook with full code
-├── predict.py                 # Python inference script
-├── app.py                     # Streamlit web application
-├── best_model.keras           # Trained model
-├── performance_report.json    # Metrics in JSON format
-├── performance_report.pdf     # Detailed performance report
-├── results.png                # Training plots and confusion matrix
+├── final_notebook.ipynb    # Full training code
+├── predict.py              # Command-line inference
+├── app.py                  # Streamlit web app
+├── best_model.keras        # Saved model weights
+├── performance_report.json
+├── performance_report.pdf
+├── results.png             # Training plots + confusion matrix
 └── README.md
-```
 
----
-
-##  Technologies Used
-
-- Python
-- TensorFlow / Keras
-- NumPy
-- Librosa
-- Scikit-Learn
-- Matplotlib
-- Seaborn
-- Streamlit
-
----
-
-##  Running the Project
-
-### Install Dependencies
-```bash
-pip install tensorflow librosa numpy scikit-learn matplotlib seaborn streamlit
-```
-
-### Run Training Notebook
-```bash
-jupyter notebook
-```
-Open `final_notebook.ipynb` and run all cells sequentially.
-
-### Test on New Audio Sample (predict.py)
-```bash
-python predict.py --audio path/to/audio.wav --model best_model.keras
-```
-
-Example output:
-```
+Running the Project
+Install dependencies
+bashpip install tensorflow librosa numpy scikit-learn matplotlib seaborn streamlit
+Train the model
+Open final_notebook.ipynb in Jupyter and run all cells.
+Test on a new audio file
+bashpython predict.py --audio path/to/audio.wav --model best_model.keras
+Sample output:
 ==================================================
 DEEPFAKE AUDIO DETECTION RESULT
 ==================================================
@@ -227,36 +96,25 @@ Confidence  : 96.40%
 Fake Prob   : 96.40%
 Real Prob   : 3.60%
 ==================================================
-```
+Run the web app
+bashstreamlit run app.py
+Upload a .wav file and get an instant result with a confidence score.
 
-### Run Streamlit Web App
-```bash
-streamlit run app.py
-```
-- Upload a `.wav` audio file
-- Get instant prediction: Genuine or Deepfake
-- View confidence score
+What's next?
+A few things I'd like to explore going forward:
 
----
+Swapping CNN for EfficientNet on spectrograms
+Trying Transformer-based audio models
+Testing against the ASVspoof benchmark
+Real-time detection from microphone input
+Adding XAI visualizations (Grad-CAM on spectrograms)
 
-##  Future Improvements
 
-- EfficientNet-based audio spectrogram classification
-- Transformer-based architectures
-- ASVspoof benchmark integration
-- Real-time audio detection
-- Explainable AI (XAI) visualizations
+Author
+Sakshi (24115129)
 
----
+Electrical Engineering
 
-##  Author
+IIT Roorkee
 
-Sakshi ,24115129
-Electrical Engineering  
-Indian Institute of Technology Roorkee
-
----
-
-##  License
-
-This project is developed for educational, research, and deepfake detection purposes.
+Built for educational and research purposes — specifically, to make AI-generated audio a little harder to fake undetected.

@@ -1,7 +1,4 @@
-"""
-Deepfake Audio Detection - Inference Script
-Usage: python predict.py --audio path/to/audio.wav --model path/to/best_model.keras
-"""
+
 
 import argparse
 import numpy as np
@@ -10,7 +7,7 @@ import tensorflow as tf
 import warnings
 warnings.filterwarnings('ignore')
 
-# Same constants as notebook
+# Same constants as used in the  notebook
 SAMPLE_RATE = 16000
 MAX_LEN     = 64000  # 4 seconds
 N_MELS      = 64
